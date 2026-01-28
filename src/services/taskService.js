@@ -1,5 +1,5 @@
-const Task=required('../models/taskModel');
-const User=required('../models/userModel')
+const Task=require('../models/taskModel');
+const User=require('../models/userModel')
 
 // Create a new task 
 const createTask=async(data, creatorId)=>{
@@ -19,15 +19,19 @@ const createTask=async(data, creatorId)=>{
         createdBy:creatorId,
         dueDate
     })
+    await task.save()
     return task
 
 }
 // Get ALL Tasks
 const getAllTasks=async()=>{
+  
     const tasks=await Task.find()
     .populate("assignedTo","name,email,role")
     .populate("createdBy","name,email,role");
+    //  console.log("All Tasks:", tasks);
     return tasks
+     
 }
 // Get Task by Id
 const getTaskById=async(userId)=>{
@@ -55,7 +59,7 @@ const updateTask=async(taskId,status,userId)=>{
 }
 // Delete Task 
 const deleteTask=async(taskId)=>{
-    const task=await task.findById(taskId);
+    const task=await Task.findById(taskId);
     if(!task){
         const error=new Error("Task not found");
         error.statusCode=404;
