@@ -4,6 +4,7 @@ const {createTask,
     updateTask,
     deleteTask}=require("../services/taskService");
 
+
 // create Contrller Task
 const createControllerTask=async(req,res)=>{
     try{
@@ -15,10 +16,7 @@ const createControllerTask=async(req,res)=>{
         })
 
     }catch(error){
-        res.status(error.statusCode || 500).json({
-            success:false,
-            message:error.message || "Internal Server Error"
-        });
+       next(error)
     }
 }
 // Get All Tasks Controller
@@ -34,10 +32,7 @@ const getAllTasksController=async(req,res)=>{
         })
 
     }catch(error){
-        res.status(500).json({
-            success:false,
-            message:"Failed to fetch tasks"
-        })
+        next(error)
     }
 }
 // Get Task By Id Controller
@@ -51,10 +46,7 @@ const getTaskController=async(req,res)=>{
         })
 
     }catch(error){
-        res.status(500).json({
-            success:false,
-            message:"Failed to fecth your task"
-        })
+        next(error)
     }
 }
 // Update Task Controller
@@ -69,10 +61,7 @@ const updateTaskController=async(req,res)=>{
         })
 
     }catch(error){
-        res.status(error.statusCode || 500).json({
-            success:false,
-            message:error.message || "Internal Server Error"
-        })
+        next(error)
     }
 }
 // Delete Task Controller
@@ -85,10 +74,7 @@ const deleteTaskController=async(req,res)=>{
         })
 
     }catch(error){
-        res.status(error.statusCode || 500).json({
-            success:false,
-            message:error.message || "Internal Server Error"
-        })
+       next(error)
     }
 }
 module.exports={

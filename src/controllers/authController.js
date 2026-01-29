@@ -10,10 +10,7 @@ const registerController=async(req,res)=>{
         })
 
     }catch(error){
-        res.status(error.statusCode || 500).json({
-            success:false,
-            message:error.stack || "Server Error"
-        })
+       next(error);
 
     }
 }
@@ -28,11 +25,7 @@ const loginController=async(req,res)=>{
         })
 
     }catch(error){
-        res.status(error.statusCode || 500).json({
-            success:false,
-            message:error.message || "Server Error",
-
-        })
+        next(error);
     }
 }
 module.exports={registerController,loginController}
