@@ -24,13 +24,30 @@ const createTask=async(data, creatorId)=>{
 
 }
 // Get ALL Tasks
-const getAllTasks=async()=>{
+const getAllTasks=async(queryParams = {})=>{
+    const{page=1,limit=10,status,priority}=queryParams;
+    const filter={};
+    if(status){
+        filter.status=status
+    }
+    if(priority){
+        filter.priority=priority
+    }
+    const skip=(Number(page)-1)*Number(limit)
   
-    const tasks=await Task.find()
+    const tasks=await Task.find(filter)
     .populate("assignedTo","name,email,role")
-    .populate("createdBy","name,email,role");
-    //  console.log("All Tasks:", tasks);
-    return tasks
+    .populate("createdBy","name,email,role")
+    .skip(skip)
+    .limit(Number(limit))
+    .sort({createdAt:-1})
+    const totalTasks=await Task.countDocuments(filter)
+    return{
+        totalTasks,
+        currentPage:Number(page),
+        totalPages:Math.ceil(totalTasks/Number(limit)),
+        tasks,
+    }
      
 }
 // Get Task by Id
@@ -68,11 +85,33 @@ const deleteTask=async(taskId)=>{
     await task.deleteOne();
     return{message:"Task deleted successfully"}
 }
+// add Task statics 
+const getTaskStatistics=async()=>{
+    const totalTasks=await Task.countDocuments();
+    const completedTasks=await Task.countDocuments({
+        status:"Completed"
+    })
+    const pendingTasks=await Task.countDocuments({
+        status:{$ne:"Completed"}
+    })
+    const overDueTasks=await Task.countDocuments({
+        status:{$ne:"Completed"},
+        dueDate:{$lt:new Date()}
+    })
+    return{
+        totalTasks,
+        completedTasks,
+        pendingTasks,
+        overDueTasks
+
+    }
+}
 
 module.exports={
     createTask,
     getAllTasks,
     getTaskById,
     updateTask,
-    deleteTask
+    deleteTask,
+    getTaskStatistics
 }

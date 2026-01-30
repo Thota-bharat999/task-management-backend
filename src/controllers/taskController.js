@@ -2,11 +2,12 @@ const {createTask,
     getAllTasks,
     getTaskById,
     updateTask,
-    deleteTask}=require("../services/taskService");
+    deleteTask,
+    getTaskStatistics}=require("../services/taskService");
 
 
 // create Contrller Task
-const createControllerTask=async(req,res)=>{
+const createControllerTask=async(req,res,next)=>{
     try{
         const task=await createTask(req.body,req.user._id);
         res.status(201).json({
@@ -20,15 +21,18 @@ const createControllerTask=async(req,res)=>{
     }
 }
 // Get All Tasks Controller
-const getAllTasksController=async(req,res)=>{
+const getAllTasksController=async(req,res,next)=>{
     try{
         
 
-        const tasks=await getAllTasks();
+        const result=await getAllTasks(req.query);
         res.status(200).json({
-            success:true,
-            count:tasks.length,
-            data:tasks
+      success: true,
+      totalTasks: result.totalTasks,
+      currentPage: result.currentPage,
+      totalPages: result.totalPages,
+      count: result.tasks.length,
+      data: result.tasks,
         })
 
     }catch(error){
@@ -36,7 +40,7 @@ const getAllTasksController=async(req,res)=>{
     }
 }
 // Get Task By Id Controller
-const getTaskController=async(req,res)=>{
+const getTaskController=async(req,res,next)=>{
     try{
         const tasks=await getTaskById(req.user._id);
         res.status(200).json({
@@ -50,7 +54,7 @@ const getTaskController=async(req,res)=>{
     }
 }
 // Update Task Controller
-const updateTaskController=async(req,res)=>{
+const updateTaskController=async(req,res,next)=>{
     try{
         const {status}=req.body;
         const task=await updateTask(req.params.id,status,req.user._id)
@@ -65,7 +69,7 @@ const updateTaskController=async(req,res)=>{
     }
 }
 // Delete Task Controller
-const deleteTaskController=async(req,res)=>{
+const deleteTaskController=async(req,res,next)=>{
     try{
         const result=await deleteTask(req.params.id);
         res.status(200).json({
@@ -77,10 +81,24 @@ const deleteTaskController=async(req,res)=>{
        next(error)
     }
 }
+// Get Task Statistics Controller
+const getTaskStatisticsController=async(req,res,next)=>{
+    try{
+        const data=await getTaskStatistics();
+        res.status(200).json({
+            success:true,
+            data
+        });
+    }catch(error){
+        next(error)
+    }
+
+}
 module.exports={
     createControllerTask,
     getAllTasksController,
     getTaskController,
     updateTaskController,
-    deleteTaskController
+    deleteTaskController,
+    getTaskStatisticsController
 }
