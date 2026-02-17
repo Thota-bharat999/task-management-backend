@@ -1,6 +1,6 @@
 const {registerUser,loginUser}=require('../services/authService');
 // Register Controller 
-const registerController=async(req,res)=>{
+const registerController=async(req,res,next)=>{
     try{
         const user=await registerUser(req.body);
         res.status(201).json({
@@ -15,8 +15,9 @@ const registerController=async(req,res)=>{
     }
 }
 // Login Controller
-const loginController=async(req,res)=>{
+const loginController=async(req,res,next)=>{
     try{
+        // console.log("LOGIN BODY 👉", req.body);
         const user=await loginUser(req.body);
         res.status(200).json({
             success:true,

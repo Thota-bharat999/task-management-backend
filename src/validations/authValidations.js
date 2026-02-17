@@ -13,7 +13,7 @@ const registerValidation=[
     .withMessage("Password is valid atleast 6 characters"),
     body("role")
     .optional()
-    .isIn(["admin", "manager", "user"])
+    .isIn(["Admin", "Manager", "User"])
     .withMessage("Invalid role")
 ];
 const loginValidation=[

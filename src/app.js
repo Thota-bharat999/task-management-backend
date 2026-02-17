@@ -8,7 +8,7 @@ const errorHandler=require("./middlewares/errorMiddleware")
 // middleWare to Parse Json 
 app.use(cors())
 app.use(express.json())
-app.use(errorHandler)
+
 
 
 
@@ -19,4 +19,5 @@ app.use("/api/tasks",taskRoutes)
 // app.get("/",(req,res)=>{
 //     res.send("Task Management API is ruuning")
 // })
+app.use(errorHandler)
 module.exports=app

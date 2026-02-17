@@ -1,7 +1,8 @@
 const {createTask,
     getAllTasks,
     getTaskById,
-    updateTask,
+    updateTaskStatus,
+    updateFullTask,
     deleteTask,
     getTaskStatistics}=require("../services/taskService");
 
@@ -33,6 +34,7 @@ const getAllTasksController=async(req,res,next)=>{
       totalPages: result.totalPages,
       count: result.tasks.length,
       data: result.tasks,
+        tasks: result.tasks,
         })
 
     }catch(error){
@@ -53,21 +55,44 @@ const getTaskController=async(req,res,next)=>{
         next(error)
     }
 }
-// Update Task Controller
-const updateTaskController=async(req,res,next)=>{
-    try{
-        const {status}=req.body;
-        const task=await updateTask(req.params.id,status,req.user._id)
-        res.status(200).json({
-            success:true,
-            message:"Task updated successfully",
-            data:task
-        })
 
-    }catch(error){
-        next(error)
-    }
-}
+const updateFullTaskController = async (req, res, next) => {
+  try {
+    const updatedTask = await updateFullTask(
+      req.params.id,
+      req.body
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Task updated successfully",
+      data: updatedTask,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update Task Controller
+const updateStatusController = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+
+    const task = await updateTaskStatus(
+      req.params.id,
+      status,
+      req.user._id
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Status updated successfully",
+      data: task,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 // Delete Task Controller
 const deleteTaskController=async(req,res,next)=>{
     try{
@@ -98,7 +123,8 @@ module.exports={
     createControllerTask,
     getAllTasksController,
     getTaskController,
-    updateTaskController,
+    updateStatusController,
+    updateFullTaskController,
     deleteTaskController,
     getTaskStatisticsController
 }

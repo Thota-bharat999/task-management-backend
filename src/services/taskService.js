@@ -24,56 +24,105 @@ const createTask=async(data, creatorId)=>{
 
 }
 // Get ALL Tasks
-const getAllTasks=async(queryParams = {})=>{
-    const{page=1,limit=10,status,priority}=queryParams;
-    const filter={};
-    if(status){
-        filter.status=status
-    }
-    if(priority){
-        filter.priority=priority
-    }
-    const skip=(Number(page)-1)*Number(limit)
-  
-    const tasks=await Task.find(filter)
-    .populate("assignedTo","name,email,role")
-    .populate("createdBy","name,email,role")
+const getAllTasks = async (queryParams = {}) => {
+  const {
+    page = 1,
+    limit = 5,
+    search,
+    status,
+    priority,
+  } = queryParams;
+
+  const filter = {};
+
+  // 🔎 Search by title (case insensitive)
+  if (search) {
+    filter.title = { $regex: search, $options: "i" };
+  }
+
+  // Status filter
+  if (status) {
+    filter.status = status;
+  }
+
+  // Priority filter
+  if (priority) {
+    filter.priority = priority;
+  }
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const tasks = await Task.find(filter)
+    .populate("assignedTo", "name email role")
+    .populate("createdBy", "name email role")
     .skip(skip)
     .limit(Number(limit))
-    .sort({createdAt:-1})
-    const totalTasks=await Task.countDocuments(filter)
-    return{
-        totalTasks,
-        currentPage:Number(page),
-        totalPages:Math.ceil(totalTasks/Number(limit)),
-        tasks,
-    }
-     
-}
+    .sort({ createdAt: -1 });
+
+  const totalTasks = await Task.countDocuments(filter);
+
+  return {
+    totalTasks,
+    currentPage: Number(page),
+    totalPages: Math.ceil(totalTasks / Number(limit)),
+    tasks,
+  };
+};
+
 // Get Task by Id
 const getTaskById=async(userId)=>{
     const tasks=await Task.find({assignedTo:userId})
     .populate("createdBy","name,email,role");
     return tasks
 }
-// upadte Task
-const updateTask=async(taskId,status,userId)=>{
+
+const updateFullTask=async(taskId,updateData)=>{
     const task=await Task.findById(taskId);
     if(!task){
         const error=new Error("Task not found");
         error.statusCode=404;
         throw error;
-
     }
-    if(task.assignedTo.toString() !== userId.toString()){
-        const error=new Error("You are not allowed to update this task");
-        error.statusCode=403;
-        throw error;
-    }
-    task.status=status;
+    const allowedFields=[
+    "title",
+    "description",
+    "bugType",
+    "priority",
+    "assignedTo",
+    "dueDate",
+    "status"
+    ];
+    allowedFields.forEach((field)=>{
+        if(updateData[field] !== undefined){
+            task[field]=updateData[field]
+        }
+    });
     await task.save();
     return task;
 }
+
+
+// upadte Task
+const updateTaskStatus = async (taskId, status, userId) => {
+  const task = await Task.findById(taskId);
+
+  if (!task) {
+    const error = new Error("Task not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (task.assignedTo.toString() !== userId.toString()) {
+    const error = new Error("You are not allowed to update this task");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  task.status = status;
+  await task.save();
+
+  return task;
+};
 // Delete Task 
 const deleteTask=async(taskId)=>{
     const task=await Task.findById(taskId);
@@ -89,13 +138,13 @@ const deleteTask=async(taskId)=>{
 const getTaskStatistics=async()=>{
     const totalTasks=await Task.countDocuments();
     const completedTasks=await Task.countDocuments({
-        status:"Completed"
+        status:"completed"
     })
     const pendingTasks=await Task.countDocuments({
-        status:{$ne:"Completed"}
+        status:{$ne:"completed"}
     })
     const overDueTasks=await Task.countDocuments({
-        status:{$ne:"Completed"},
+        status:{$ne:"completed"},
         dueDate:{$lt:new Date()}
     })
     return{
@@ -111,7 +160,8 @@ module.exports={
     createTask,
     getAllTasks,
     getTaskById,
-    updateTask,
+    updateTaskStatus,
+    updateFullTask,
     deleteTask,
     getTaskStatistics
 }
